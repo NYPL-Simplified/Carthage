@@ -44,7 +44,7 @@ public struct SemanticVersion: Hashable {
 		return self.preRelease != nil
 	}
 
-	public init(major: Int, minor: Int, patch: Int, preRelease: String? = nil, buildMetadata: String? = nil) {
+	public init(_ major: Int, _ minor: Int, _ patch: Int, preRelease: String? = nil, buildMetadata: String? = nil) {
 		self.major = major
 		self.minor = minor
 		self.patch = patch
@@ -77,12 +77,9 @@ extension SemanticVersion {
 
 	/// The same SemanticVersion as self, except that the build metadata is discarded
 	public var discardingBuildMetadata: SemanticVersion {
-		return SemanticVersion(major: self.major,
-		                       minor: self.minor,
-		                       patch: self.patch,
-		                       preRelease: self.preRelease)
+		return SemanticVersion(self.major, self.minor, self.patch, preRelease: self.preRelease)
 	}
-
+	
 	/// Set of valid digts for SemVer versions
 	/// - note: Please use this instead of `CharacterSet.decimalDigits`, as
 	/// `decimalDigits` include more characters that are not contemplated in
@@ -94,7 +91,7 @@ extension SemanticVersion {
 		.union(SemanticVersion.semVerDecimalDigits)
 
 	fileprivate static let asciiAlphabeth = CharacterSet(
-		charactersIn: "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
+		charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	)
 
 	/// Set of valid character for SemVer build metadata section
@@ -169,11 +166,7 @@ extension SemanticVersion: Scannable {
 			return .failure(ScannableError(message: "can not have pre-release or build metadata without patch, in \"\(version)\""))
 		}
 
-		return .success(self.init(major: major,
-		                          minor: minor,
-		                          patch: patch ?? 0,
-		                          preRelease: preRelease,
-		                          buildMetadata: buildMetadata))
+		return .success(self.init(major, minor, patch ?? 0, preRelease: preRelease, buildMetadata: buildMetadata))
 	}
 
 	/// Checks validity of a build metadata string and returns an error if not valid
