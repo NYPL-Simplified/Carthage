@@ -5,7 +5,7 @@ import ReactiveTask
 import Result
 import Tentacle
 
-/// The latest online version as a SemanticVersion object.
+/// The latest version of Carthage as a `Version`.
 public func remoteVersion() -> SemanticVersion? {
 	let remoteVersionProducer = Client(.dotCom, urlSession: URLSession.proxiedSession)
 		.execute(Repository(owner: "Carthage", name: "Carthage").releases, perPage: 2)

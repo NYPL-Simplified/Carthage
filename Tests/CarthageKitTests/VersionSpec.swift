@@ -3,64 +3,15 @@ import Foundation
 import Nimble
 import Quick
 
-class SemanticVersionSpec: QuickSpec {
+class VersionSpec: QuickSpec {
 	override func spec() {
-		it("should order versions correctly") {
-			let version = SemanticVersion(major: 2, minor: 1, patch: 1)
-
-			expect(version) < SemanticVersion(major: 3, minor: 0, patch: 0)
-			expect(version) < SemanticVersion(major: 2, minor: 2, patch: 0)
-			expect(version) < SemanticVersion(major: 2, minor: 1, patch: 2)
-
-			expect(version) > SemanticVersion(major: 1, minor: 2, patch: 2)
-			expect(version) > SemanticVersion(major: 2, minor: 0, patch: 2)
-			expect(version) > SemanticVersion(major: 2, minor: 1, patch: 0)
-
-			expect(version) < SemanticVersion(major: 10, minor: 0, patch: 0)
-			expect(version) < SemanticVersion(major: 2, minor: 10, patch: 1)
-			expect(version) < SemanticVersion(major: 2, minor: 1, patch: 10)
-			
-			expect(version) < SemanticVersion(major: 2, minor: 1, patch: 2, buildMetadata: "b421")
-			expect(version) != SemanticVersion(major: 2, minor: 1, patch: 1, buildMetadata: "b2334")
-			expect(version) > SemanticVersion(major: 2, minor: 1, patch: 0, buildMetadata: "b421")
-		}
-		
-		it("should order pre-release versions correctly") {
-			let version = SemanticVersion(major: 2, minor: 1, patch: 1, preRelease: "alpha8")
-			
-			expect(version) < SemanticVersion(major: version.major, minor: version.minor, patch: version.patch)
-			expect(version) > SemanticVersion(major: version.major, minor: version.minor, patch: version.patch-1)
-			expect(version) == SemanticVersion(major: version.major, minor: version.minor, patch: version.patch, preRelease: version.preRelease)
-			
-			// As specified in http://semver.org/
-			// "Example: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0"
-			
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.1")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.1")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.beta")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.beta")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.2")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.2")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.11")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.11")) < SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "rc.1")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "rc.1")) < SemanticVersion(major: 1, minor: 0, patch: 0)
-			
-			// now test the reverse (to catch error if the < function ALWAYS returns true)
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.1")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.beta")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.1")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "alpha.beta")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.2")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.11")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.2")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "rc.1")) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "beta.11")
-			expect(SemanticVersion(major: 1, minor: 0, patch: 0)) > SemanticVersion(major: 1, minor: 0, patch: 0, preRelease: "rc.1")
-		}
-
 		it("should parse semantic versions") {
-			expect(SemanticVersion.from(PinnedVersion("1.4")).value) == SemanticVersion(major: 1, minor: 4, patch: 0)
-			expect(SemanticVersion.from(PinnedVersion("v2.8.9")).value) == SemanticVersion(major: 2, minor: 8, patch: 9)
-			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha")).value) == SemanticVersion(major: 2, minor: 8, patch: 2, preRelease: "alpha")
-			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha+build234")).value) == SemanticVersion(major: 2, minor: 8, patch: 2, preRelease: "alpha", buildMetadata: "build234")
-			expect(SemanticVersion.from(PinnedVersion("2.8.2+build234")).value) == SemanticVersion(major: 2, minor: 8, patch: 2, buildMetadata: "build234")
-			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha.2.1.0")).value) == SemanticVersion(major: 2, minor: 8, patch: 2, preRelease: "alpha.2.1.0")
-
+			expect(SemanticVersion.from(PinnedVersion("1.4")).value) == SemanticVersion(1, 4, 0)
+			expect(SemanticVersion.from(PinnedVersion("v2.8.9")).value) == SemanticVersion(2, 8, 9)
+			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha")).value) == SemanticVersion(2, 8, 2, preRelease: "alpha")
+			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha+build234")).value) == SemanticVersion(2, 8, 2, preRelease: "alpha", buildMetadata: "build234")
+			expect(SemanticVersion.from(PinnedVersion("2.8.2+build234")).value) == SemanticVersion(2, 8, 2, buildMetadata: "build234")
+			expect(SemanticVersion.from(PinnedVersion("2.8.2-alpha.2.1.0")).value) == SemanticVersion(2, 8, 2, preRelease: "alpha.2.1.0")
 		}
 
 		it("should fail on invalid semantic versions") {
@@ -71,7 +22,7 @@ class SemanticVersionSpec: QuickSpec {
 			expect(SemanticVersion.from(PinnedVersion("null-string-beta-2")).value).to(beNil())
 			expect(SemanticVersion.from(PinnedVersion("1.4.5+")).value).to(beNil()) // missing build metadata after '+'
 			expect(SemanticVersion.from(PinnedVersion("1.4.5-alpha+")).value).to(beNil()) // missing build metadata after '+'
-			expect(SemanticVersion.from(PinnedVersion("1.4.5-alpha#2")).value).to(beNil()) // non alphanumeric are  not allowed in pre-release
+			expect(SemanticVersion.from(PinnedVersion("1.4.5-alpha#2")).value).to(beNil()) // non alphanumeric are not allowed in pre-release
 			expect(SemanticVersion.from(PinnedVersion("1.4.5-alpha.2.01.0")).value).to(beNil()) // numeric identifiers in pre-release
 																								//version must not include leading zeros
 			expect(SemanticVersion.from(PinnedVersion("1.4.5-alpha.2..0")).value).to(beNil()) // empty pre-release component
@@ -253,14 +204,14 @@ class VersionSpecifierSpec: QuickSpec {
 		}
 
 		describe("intersection") {
-			let v0_1_0 = SemanticVersion(major: 0, minor: 1, patch: 0)
-			let v0_1_1 = SemanticVersion(major: 0, minor: 1, patch: 1)
-			let v0_2_0 = SemanticVersion(major: 0, minor: 2, patch: 0)
-			let v1_3_2 = SemanticVersion(major: 1, minor: 3, patch: 2)
-			let v2_1_1 = SemanticVersion(major: 2, minor: 1, patch: 1)
-			let v2_2_0 = SemanticVersion(major: 2, minor: 2, patch: 0)
-			let v2_2_0_b421 = SemanticVersion(major: 2, minor: 2, patch: 0, buildMetadata: "b421")
-			let v2_2_0_alpha = SemanticVersion(major: 2, minor: 2, patch: 0, preRelease: "alpha")
+			let v0_1_0 = SemanticVersion(0, 1, 0)
+			let v0_1_1 = SemanticVersion(0, 1, 1)
+			let v0_2_0 = SemanticVersion(0, 2, 0)
+			let v1_3_2 = SemanticVersion(1, 3, 2)
+			let v2_1_1 = SemanticVersion(2, 1, 1)
+			let v2_2_0 = SemanticVersion(2, 2, 0)
+			let v2_2_0_b421 = SemanticVersion(2, 2, 0, buildMetadata: "b421")
+			let v2_2_0_alpha = SemanticVersion(2, 2, 0, preRelease: "alpha")
 
 			it("should return the tighter specifier when one is .any") {
 				testIntersection(.any, .any, expected: .any)
