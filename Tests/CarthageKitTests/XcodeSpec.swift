@@ -114,7 +114,7 @@ class XcodeSpec: QuickSpec {
 			it("should not find anything in the Carthage Subdirectory") {
 				let relativePaths = relativePathsForProjectsInDirectory(directoryURL)
 				expect(relativePaths).toNot(beEmpty())
-				let pathsStartingWithCarthage = relativePaths.filter { $0.hasPrefix("\(carthageProjectCheckoutsPath)/") }
+				let pathsStartingWithCarthage = relativePaths.filter { $0.hasPrefix("\(Constants.checkoutsFolderPath)/") }
 				expect(pathsStartingWithCarthage).to(beEmpty())
 			}
 
@@ -344,6 +344,11 @@ class XcodeSpec: QuickSpec {
 			let path = buildFolderURL.appendingPathComponent("Mac/\(dependency.name).framework").path
 			expect(path).to(beExistingDirectory())
 
+			// Verify that the version file exists.
+			let versionFileURL = URL(fileURLWithPath: buildFolderURL.appendingPathComponent(".Archimedes.version").path)
+			let versionFile = VersionFile(url: versionFileURL)
+			expect(versionFile).notTo(beNil())
+			
 			// Verify that the other platform wasn't built.
 			let incorrectPath = buildFolderURL.appendingPathComponent("iOS/\(dependency.name).framework").path
 			expect(FileManager.default.fileExists(atPath: incorrectPath, isDirectory: nil)) == false

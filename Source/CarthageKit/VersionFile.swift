@@ -13,7 +13,10 @@ struct CachedFramework: Codable {
 
 	let name: String
 	let hash: String
-	let swiftToolchainVersion: String
+	let swiftToolchainVersion: String?
+	var isSwiftFramework: Bool {
+		return swiftToolchainVersion != nil
+	}
 }
 
 struct VersionFile: Codable {
@@ -75,6 +78,14 @@ struct VersionFile: Codable {
 		}
 		self = versionFile
 	}
+
+    static func url(for dependency: Dependency, rootDirectoryURL: URL) -> URL {
+        let rootBinariesURL = rootDirectoryURL
+			.appendingPathComponent(Constants.binariesFolderPath, isDirectory: true)
+			.resolvingSymlinksInPath()
+        return rootBinariesURL
+			.appendingPathComponent(".\(dependency.name).\(VersionFile.pathExtension)")
+    }
 
 	func frameworkURL(
 		for cachedFramework: CachedFramework,
@@ -149,7 +160,6 @@ struct VersionFile: Codable {
 					return SignalProducer(value: true)
 				} else {
 					return frameworkSwiftVersion(frameworkURL)
-						.flatMapError { _ in dSYMSwiftVersion(frameworkURL.appendingPathExtension("dSYM")) }
 						.map { swiftVersion -> Bool in
 							return swiftVersion == localSwiftVersion
 						}
@@ -403,7 +413,7 @@ public func createVersionFileForCommitish(
 	struct FrameworkDetail {
 		let platformName: String
 		let frameworkName: String
-		let frameworkSwiftVersion: String
+		let frameworkSwiftVersion: String?
 	}
 
 	if !buildProducts.isEmpty {
@@ -411,7 +421,7 @@ public func createVersionFileForCommitish(
 			.flatMap(.merge) { url -> SignalProducer<(String, FrameworkDetail), CarthageError> in
 				let frameworkName = url.deletingPathExtension().lastPathComponent
 				let platformName = url.deletingLastPathComponent().lastPathComponent
-				return frameworkSwiftVersion(url)
+				return frameworkSwiftVersionIfIsSwiftFramework(url)
 					.mapError { swiftVersionError -> CarthageError in .unknownFrameworkSwiftVersion(swiftVersionError.description) }
 					.flatMap(.merge) { frameworkSwiftVersion -> SignalProducer<(String, FrameworkDetail), CarthageError> in
 					let frameworkDetail: FrameworkDetail = .init(platformName: platformName,
@@ -469,11 +479,7 @@ public func versionFileMatches(
 	rootDirectoryURL: URL,
 	toolchain: String?
 ) -> SignalProducer<Bool?, CarthageError> {
-	let rootBinariesURL = rootDirectoryURL
-		.appendingPathComponent(Constants.binariesFolderPath, isDirectory: true)
-		.resolvingSymlinksInPath()
-	let versionFileURL = rootBinariesURL
-		.appendingPathComponent(".\(dependency.name).\(VersionFile.pathExtension)")
+	let versionFileURL = VersionFile.url(for: dependency, rootDirectoryURL: rootDirectoryURL)
 	guard let versionFile = VersionFile(url: versionFileURL) else {
 		return SignalProducer(value: nil)
 	}
@@ -481,6 +487,10 @@ public func versionFileMatches(
 	let commitish = version.commitish
 
 	let platformsToCheck = platforms.isEmpty ? Set<Platform>(Platform.supportedPlatforms) : platforms
+
+	let rootBinariesURL = rootDirectoryURL
+		.appendingPathComponent(Constants.binariesFolderPath, isDirectory: true)
+		.resolvingSymlinksInPath()
 
 	return swiftVersion(usingToolchain: toolchain)
 		.mapError { error in CarthageError.internalError(description: error.description) }
